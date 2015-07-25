@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Test Console</title>
+	<script type="text/javascript" src="lib/jquery/dist/jquery.js"></script>
+	<style>
+		#employees {
+			margin-top: 10px;
+		}
+	</style>
+</head>
+<body>
+<h1>Basic form</h1>
+<form method="POST" action="/api/Employee" id="testForm">
+	<label for="Name">Name</label>
+	<input name="Name" id="Name"/>
+	<button type="submit">Add</button>
+</form>
+
+<h2>Basic list</h2>
+<div id="employees">
+
+</div>
+<script type="text/javascript">
+	$(function () {
+
+		function loadData() {
+			$.getJSON('/api/employee')
+				.done(function(data) {
+					var list = $('#employees');
+					list.empty();
+
+					data.forEach(function(item) {
+						list.append(item.Name + "<br />");
+					});
+
+				});
+		}
+
+		loadData();
+
+		$('#testForm').submit(function(e) {
+			e.preventDefault();
+
+			$.post('/api/employee', $(this).serialize())
+				.done(loadData);
+		});
+	})
+</script>
+</body>
+</html>
