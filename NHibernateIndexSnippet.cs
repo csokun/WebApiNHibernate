@@ -11,12 +11,22 @@
 		{
 			configuration.BuildMappings();
 			var tables = (ICollection<Table>) tableMappingsProperty.GetValue(configuration, null);
-			foreach (var table in tables.Where(x=> includeTablePredicate(x.Name)))
+			foreach (var table in tables.Where(x => includeTablePredicate(x.Name)))
 			{
+				var columnsOfPk = table.HasPrimaryKey ? table.PrimaryKey.Columns.Select(x => x.Name).ToArray() : new string[0];
 				foreach (var foreignKey in table.ForeignKeyIterator)
 				{
+					if (table.HasPrimaryKey)
+					{
+						var columnsOfFk = foreignKey.Columns.Select(x => x.Name).ToArray();
+						var fkHasSameColumnsOfPk = !columnsOfPk.Except(columnsOfFk).Concat(columnsOfFk.Except(columnsOfPk)).Any();
+						if (fkHasSameColumnsOfPk)
+						{
+							continue;
+						}
+					}
 					var idx = new Index();
-					idx.AddColumns(foreignKey.ColumnIterator);
+					idx.AddColumns(foreignKey.Columns);
 					idx.Name = "IX" + foreignKey.Name.Substring(2);
 					idx.Table = table;
 					table.AddIndex(idx);
